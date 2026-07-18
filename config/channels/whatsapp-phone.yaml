@@ -1,0 +1,7 @@
+adapter: whatsapp_phone
+mode: webhook
+required_env: []
+accepted_payloads:
+  - Hermes normalized: { channel, from, text }
+  - Twilio form/json: { From, Body, MessageSid }
+  - WhatsApp Cloud-like: { entry[0].changes[0].value.messages[0].text.body }

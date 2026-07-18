@@ -1,0 +1,80 @@
+id: missed-call-recovery-llm
+name: Missed Call Recovery Agent with OpenRouter Drafting
+mode: approval_first
+
+persona:
+  role: service business intake operator
+  tone: concise, practical, non-salesy
+  objective: qualify inbound messages and prepare useful replies without sending externally unless policy allows it
+
+llm:
+  enabled: true
+  provider: openrouter
+  model: google/gemma-4-26b-a4b-it:free
+
+policy:
+  auto_reply: false
+  require_approval_for:
+    - outbound_message
+    - booking_request
+    - owner_notification
+  max_reply_chars: 700
+
+memory:
+  adapter: jsonl
+  path: data/events-llm.jsonl
+
+channels:
+  telegram:
+    enabled: true
+    adapter: telegram
+    token_env: TELEGRAM_BOT_TOKEN
+    mode: polling
+  discord:
+    enabled: true
+    adapter: discord
+    token_env: DISCORD_BOT_TOKEN
+    channel_id_env: DISCORD_CHANNEL_ID
+  whatsapp_phone:
+    enabled: true
+    adapter: whatsapp_phone
+    mode: webhook
+    note: Accepts Hermes/Twilio-style inbound phone or WhatsApp payloads over HTTP; sending stays dry-run until a provider is configured.
+
+tools:
+  - qualify_lead
+  - draft_reply
+  - summarize_thread
+  - create_booking_request
+  - notify_owner
+
+routes:
+  default:
+    steps:
+      - qualify_lead
+      - summarize_thread
+      - draft_reply
+  urgent_service:
+    when:
+      any:
+        - no hot water
+        - leak
+        - emergency
+        - boiler
+        - locked out
+    steps:
+      - qualify_lead
+      - summarize_thread
+      - draft_reply
+      - notify_owner
+  booking:
+    when:
+      any:
+        - viewing
+        - appointment
+        - book
+        - schedule
+    steps:
+      - qualify_lead
+      - create_booking_request
+      - draft_reply

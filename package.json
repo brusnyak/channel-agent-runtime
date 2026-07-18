@@ -1,0 +1,19 @@
+{
+  "name": "channel-agent-runtime",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "simulate": "node src/cli.mjs simulate --config config/agents/missed-call-recovery.yaml",
+    "server": "node src/cli.mjs server --config config/agents/missed-call-recovery.yaml",
+    "telegram": "node src/cli.mjs telegram --config config/agents/missed-call-recovery.yaml",
+    "discord": "node src/cli.mjs discord --config config/agents/missed-call-recovery.yaml",
+    "test": "node scripts/smoke.mjs"
+  },
+  "dependencies": {
+    "discord.js": "^14.22.1",
+    "dotenv": "^17.2.3",
+    "grammy": "^1.38.4",
+    "yaml": "^2.8.2"
+  }
+}

@@ -1,0 +1,8 @@
+adapter: telegram
+mode: polling
+required_env:
+  - TELEGRAM_BOT_TOKEN
+incoming_shape:
+  id: update.update_id
+  sender: update.message.chat
+  text: update.message.text

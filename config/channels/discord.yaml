@@ -1,0 +1,9 @@
+adapter: discord
+mode: gateway
+required_env:
+  - DISCORD_BOT_TOKEN
+  - DISCORD_CHANNEL_ID
+incoming_shape:
+  id: message.id
+  sender: message.author
+  text: message.content
