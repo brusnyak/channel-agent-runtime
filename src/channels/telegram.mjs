@@ -1,4 +1,5 @@
 import { Bot } from 'grammy';
+import { formatDecision, handleCommand, parseCommand } from '../bot/commands.mjs';
 import { normalizeTelegram } from './normalize.mjs';
 
 export async function startTelegram(config, runtime) {
@@ -8,12 +9,16 @@ export async function startTelegram(config, runtime) {
 
   const bot = new Bot(token);
 
-  bot.command('start', async (ctx) => {
-    await ctx.reply(`Running ${config.name}. Send a message and I will process it through the configured tools.`);
-  });
-
   bot.on('message:text', async (ctx) => {
-    const decision = await runtime.handleMessage(normalizeTelegram(ctx.update));
+    const message = normalizeTelegram(ctx.update);
+    const command = parseCommand(message.text);
+    if (command) {
+      const reply = await handleCommand({ command, config, runtime, sourceMessage: message });
+      await ctx.reply(reply);
+      return;
+    }
+
+    const decision = await runtime.handleMessage(message);
     console.log(
       JSON.stringify({
         at: decision.at,
@@ -24,7 +29,7 @@ export async function startTelegram(config, runtime) {
       }),
     );
     if (decision.approval_required) {
-      await ctx.reply(`Draft queued for approval:\n\n${decision.reply}`);
+      await ctx.reply(formatDecision(decision, 'Draft queued for approval'));
     } else {
       await ctx.reply(decision.reply);
     }

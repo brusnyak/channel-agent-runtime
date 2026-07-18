@@ -1,0 +1,12 @@
+adapter: slack
+mode: socket
+required_env:
+  - SLACK_BOT_TOKEN
+  - SLACK_APP_TOKEN
+  - SLACK_SIGNING_SECRET
+optional_env:
+  - SLACK_CHANNEL_ID
+incoming_shape:
+  id: event.ts
+  sender: event.user
+  text: event.text

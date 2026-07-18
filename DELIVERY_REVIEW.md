@@ -9,6 +9,7 @@ Working:
 - YAML agent config.
 - Telegram adapter via `grammY`.
 - Discord adapter via `discord.js`.
+- Slack adapter via Bolt Socket Mode.
 - HTTP gateway for Hermes/Twilio/WhatsApp-phone style payloads.
 - Message normalization into one internal event shape.
 - Route selection from config.
@@ -20,10 +21,12 @@ Working:
 - Telegram long polling live test succeeded with `@yjobiz_bot`.
 - HTTP API smoke test covers health, Hermes JSON webhook, Twilio form webhook, and event persistence.
 - Smoke test covering runtime, routing, tools, Telegram normalization, phone/WhatsApp normalization, and persistence.
+- Command smoke test covering `/help`, `/tools`, `/route`, `/demo`, and `/history`.
 
 Not working yet:
 
 - Discord cannot be tested because `DISCORD_BOT_TOKEN` and `DISCORD_CHANNEL_ID` are missing.
+- Slack cannot be tested because `SLACK_BOT_TOKEN`, `SLACK_APP_TOKEN`, and `SLACK_SIGNING_SECRET` are missing.
 - WhatsApp real sending is not connected; this intentionally stays as a provider-neutral phone/webhook adapter until Hermes/Twilio/Meta configuration is chosen.
 - No LangGraph implementation yet.
 - Oracle/systemd deployment is not done yet.

@@ -6,6 +6,7 @@ import { normalizePhoneWebhook } from './channels/normalize.mjs';
 import { startHttpServer } from './channels/httpServer.mjs';
 import { startTelegram } from './channels/telegram.mjs';
 import { startDiscord } from './channels/discord.mjs';
+import { startSlack } from './channels/slack.mjs';
 
 const command = process.argv[2] ?? 'simulate';
 loadRuntimeEnv();
@@ -28,6 +29,8 @@ if (command === 'simulate') {
   await startTelegram(config, runtime);
 } else if (command === 'discord') {
   await startDiscord(config, runtime);
+} else if (command === 'slack') {
+  await startSlack(config, runtime);
 } else {
   console.error(`Unknown command: ${command}`);
   process.exit(1);

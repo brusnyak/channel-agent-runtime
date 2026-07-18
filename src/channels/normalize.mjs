@@ -28,6 +28,20 @@ export function normalizeDiscord(message) {
   };
 }
 
+export function normalizeSlack(event) {
+  return {
+    channel: 'slack',
+    id: `slack:${event.ts ?? Date.now()}`,
+    text: event.text ?? '',
+    sender: {
+      id: event.user,
+      name: event.user_name ?? event.user ?? 'Slack user',
+      handle: event.user ? `slack:${event.user}` : undefined,
+    },
+    raw: event,
+  };
+}
+
 export function normalizePhoneWebhook(payload) {
   if (payload.channel && payload.text) {
     return {

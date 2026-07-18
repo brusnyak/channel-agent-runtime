@@ -8,8 +8,10 @@ This is the proper proof asset for bot/operator jobs. It is not a web UI. The in
 
 - Agent behavior is defined by YAML config.
 - Channels are adapters, not separate apps.
+- Bot commands are implemented, not just conversational text handling.
 - Telegram can run for real with `grammY`.
 - Discord can run for real with `discord.js`.
+- Slack can run for real with Bolt Socket Mode once credentials are present.
 - WhatsApp is represented as a phone/webhook gateway so it can bind later to Hermes, Twilio, or WhatsApp Cloud API without rewriting the agent.
 - Tools are registered once and reused across channels.
 - State is written to JSONL for audit/replay.
@@ -33,6 +35,7 @@ That is closer to Hermes-style work than a React dashboard.
 flowchart LR
   TG["Telegram via grammY"] --> N["Normalize message"]
   DC["Discord via discord.js"] --> N
+  SL["Slack via Bolt Socket Mode"] --> N
   WA["WhatsApp/phone webhook"] --> N
   N --> CFG["YAML agent config"]
   CFG --> ROUTE["Route selector"]
@@ -61,11 +64,12 @@ npm run simulate
 Verified locally on 2026-07-18:
 
 ```text
-Smoke passed: config runtime, phone webhook normalization, Telegram normalization, routing, tools, and JSONL memory work.
+Smoke passed: config runtime, phone webhook normalization, Telegram/Slack normalization, routing, tools, and JSONL memory work.
 HTTP smoke passed: health, Hermes JSON webhook, Twilio form webhook, and events endpoint work.
 OK telegram: bot @yjobiz_bot
 OK openrouter: 20 free model(s) visible
 OK discord: credentials missing; adapter skipped
+OK slack: credentials missing; adapter skipped
 ```
 
 ## HTTP Gateway
@@ -137,6 +141,19 @@ Outbound status: queued_for_approval.
 Bot replied with the approval-gated draft.
 ```
 
+Commands:
+
+```text
+/help
+/status
+/tools
+/routes
+/demo urgent
+/demo booking
+/route <message>
+/history 5
+```
+
 ## Discord
 
 Add:
@@ -153,6 +170,22 @@ npm run discord
 ```
 
 The bot ignores messages outside `DISCORD_CHANNEL_ID` when configured.
+
+Commands can use `/help` or `!help`.
+
+## Slack
+
+Add credentials as described in [CHANNEL_SETUP.md](CHANNEL_SETUP.md), then run:
+
+```bash
+npm run slack
+```
+
+Slack uses Bolt Socket Mode, so no public webhook URL is required for local development.
+
+## Channel Setup
+
+See [CHANNEL_SETUP.md](CHANNEL_SETUP.md) for Telegram, WhatsApp/Twilio, Discord, and Slack credential setup.
 
 ## Config
 
@@ -246,7 +279,9 @@ npm run test:llm
 `npm run test` covers:
 
 - config/runtime smoke
+- bot command smoke
 - Telegram payload normalization
+- Slack payload normalization
 - phone/WhatsApp payload normalization
 - route selection
 - tool execution

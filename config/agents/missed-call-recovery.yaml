@@ -36,6 +36,13 @@ channels:
     adapter: discord
     token_env: DISCORD_BOT_TOKEN
     channel_id_env: DISCORD_CHANNEL_ID
+  slack:
+    enabled: true
+    adapter: slack
+    bot_token_env: SLACK_BOT_TOKEN
+    app_token_env: SLACK_APP_TOKEN
+    signing_secret_env: SLACK_SIGNING_SECRET
+    channel_id_env: SLACK_CHANNEL_ID
   whatsapp_phone:
     enabled: true
     adapter: whatsapp_phone

@@ -3,7 +3,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { loadConfig } from '../src/config/loadConfig.mjs';
 import { createRuntime } from '../src/agent/runtime.mjs';
-import { normalizePhoneWebhook, normalizeTelegram } from '../src/channels/normalize.mjs';
+import { normalizePhoneWebhook, normalizeSlack, normalizeTelegram } from '../src/channels/normalize.mjs';
 
 const config = await loadConfig('config/agents/missed-call-recovery.yaml');
 const dataDir = await mkdtemp(join(tmpdir(), 'channel-agent-runtime-'));
@@ -30,14 +30,23 @@ const telegramDecision = await runtime.handleMessage(
   }),
 );
 
+const slackDecision = await runtime.handleMessage(
+  normalizeSlack({
+    ts: '1784367000.000100',
+    user: 'U123',
+    text: 'Can I book a viewing tomorrow?',
+  }),
+);
+
 const events = await runtime.store.readAll();
 
 assert(phoneDecision.route === 'urgent_service', 'phone decision should use urgent route');
 assert(telegramDecision.route === 'booking', 'telegram decision should use booking route');
+assert(slackDecision.route === 'booking', 'slack decision should use booking route');
 assert(phoneDecision.tool_results.draft_reply.text, 'phone decision should draft reply');
-assert(events.length === 2, 'store should persist both decisions');
+assert(events.length === 3, 'store should persist all decisions');
 
-console.log('Smoke passed: config runtime, phone webhook normalization, Telegram normalization, routing, tools, and JSONL memory work.');
+console.log('Smoke passed: config runtime, phone webhook normalization, Telegram/Slack normalization, routing, tools, and JSONL memory work.');
 
 function assert(condition, message) {
   if (!condition) {

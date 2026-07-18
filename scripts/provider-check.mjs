@@ -37,6 +37,12 @@ if (process.env.DISCORD_BOT_TOKEN && process.env.DISCORD_CHANNEL_ID) {
   checks.push({ provider: 'discord', ok: true, detail: 'credentials missing; adapter skipped' });
 }
 
+if (process.env.SLACK_BOT_TOKEN && process.env.SLACK_APP_TOKEN && process.env.SLACK_SIGNING_SECRET) {
+  checks.push({ provider: 'slack', ok: true, detail: 'credentials present; Socket Mode not live-tested in provider check' });
+} else {
+  checks.push({ provider: 'slack', ok: true, detail: 'credentials missing; adapter skipped' });
+}
+
 for (const check of checks) {
   console.log(`${check.ok ? 'OK' : 'FAIL'} ${check.provider}: ${check.detail}`);
 }
