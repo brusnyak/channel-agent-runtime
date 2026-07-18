@@ -15,7 +15,9 @@
     "test:http": "node scripts/http-smoke.mjs",
     "test:providers": "node scripts/provider-check.mjs",
     "test:llm": "node scripts/llm-smoke.mjs",
-    "check:whatsapp": "node scripts/whatsapp-check.mjs"
+    "check:whatsapp": "node scripts/whatsapp-check.mjs",
+    "check:discord": "node scripts/discord-check.mjs",
+    "check:slack": "node scripts/slack-check.mjs"
   },
   "dependencies": {
     "@slack/bolt": "^5.0.0",

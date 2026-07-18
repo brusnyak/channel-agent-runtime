@@ -12,7 +12,7 @@ This is the proper proof asset for bot/operator jobs. It is not a web UI. The in
 - Telegram can run for real with `grammY`.
 - Discord can run for real with `discord.js`.
 - Slack can run for real with Bolt Socket Mode once credentials are present.
-- WhatsApp is represented as a phone/webhook gateway so it can bind later to Hermes, Twilio, or WhatsApp Cloud API without rewriting the agent.
+- WhatsApp is represented as a phone/webhook gateway so it can bind later to Hermes Baileys, Hermes Cloud API, Twilio, or Meta WhatsApp Cloud API without rewriting the agent.
 - Tools are registered once and reused across channels.
 - State is written to JSONL for audit/replay.
 - Outbound replies are approval-gated by default.
@@ -50,7 +50,7 @@ flowchart LR
 - `grammY` is a good Telegram default because it supports Node.js and both polling and webhooks.
 - `discord.js` is the standard Node.js Discord bot library.
 - `LangGraph` is worth using later for longer-lived, stateful, multi-step agent flows. This scaffold keeps the runtime small first.
-- `whatsapp-web.js` is unofficial and browser-session based, so it is not the right professional proof path. Use official WhatsApp Cloud/Twilio/Hermes-style gateways for serious work.
+- Hermes is the easiest WhatsApp demo path because its Baileys bridge pairs through WhatsApp Web. For client-facing work, use Hermes Cloud API, Twilio WhatsApp, or direct Meta WhatsApp Cloud API.
 
 ## Run
 
@@ -70,6 +70,14 @@ OK telegram: bot @yjobiz_bot
 OK openrouter: 20 free model(s) visible
 OK discord: credentials missing; adapter skipped
 OK slack: credentials missing; adapter skipped
+```
+
+Latest live credential checks:
+
+```text
+Discord: token rejected by Discord API with 401 Unauthorized; channel ID is also missing.
+Slack: Socket Mode app token works; bot user token is missing.
+WhatsApp: Twilio credentials exist, but TWILIO_WHATSAPP_FROM is missing, so real WhatsApp send is not configured.
 ```
 
 ## HTTP Gateway
@@ -151,6 +159,11 @@ Commands:
 /demo urgent
 /demo booking
 /route <message>
+/lead <customer message>
+/book <request>
+/handoff
+/approve_last
+/reject_last
 /history 5
 ```
 

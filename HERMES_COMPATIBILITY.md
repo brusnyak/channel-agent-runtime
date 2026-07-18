@@ -41,7 +41,17 @@ Use real adapter second.
 
 ### WhatsApp / Phone
 
-Do not start with browser-session automation.
+Do not make WhatsApp the core runtime dependency.
+
+Hermes has two WhatsApp paths:
+
+- Baileys bridge: fast demo path, pairs through WhatsApp Web, no Meta developer account, no public webhook URL, but it is unofficial and carries account-risk.
+- WhatsApp Business Cloud API: production path, official Meta API, dedicated business number, public HTTPS webhook, and template rules outside the 24-hour customer-service window.
+
+For this project, the right move is:
+
+- demo/personal testing: use Hermes Baileys bridge if we need WhatsApp quickly.
+- client-facing delivery: use Hermes Cloud API, Twilio WhatsApp, or direct Meta Cloud API.
 
 This runtime exposes a generic `whatsapp_phone` HTTP adapter that accepts:
 
@@ -51,7 +61,7 @@ This runtime exposes a generic `whatsapp_phone` HTTP adapter that accepts:
 
 That means the agent runtime can be wired later to:
 
-- Hermes WhatsApp gateway
+- Hermes WhatsApp gateway, either Baileys or Cloud API
 - Twilio SMS/WhatsApp webhook
 - Meta WhatsApp Cloud API webhook
 
@@ -68,7 +78,7 @@ I built a config-driven channel agent runtime. Telegram, Discord, and WhatsApp/p
 Honest boundary:
 
 ```text
-Telegram and Discord adapters are implemented. WhatsApp is implemented as a provider-neutral phone/webhook adapter so it can connect to Hermes, Twilio, or WhatsApp Cloud API without coupling the agent to one vendor.
+Telegram, Discord, and Slack adapters are implemented. WhatsApp is implemented as a provider-neutral phone/webhook adapter so it can connect to Hermes Baileys, Hermes Cloud API, Twilio, or Meta WhatsApp Cloud API without coupling the agent to one vendor.
 ```
 
 ## Next Real Step

@@ -32,13 +32,17 @@ if (process.env.OPENROUTER_API_KEY) {
 }
 
 if (process.env.DISCORD_BOT_TOKEN && process.env.DISCORD_CHANNEL_ID) {
-  checks.push({ provider: 'discord', ok: true, detail: 'credentials present; live gateway not tested in provider check' });
+  checks.push({ provider: 'discord', ok: true, detail: 'token and channel configured; run npm run check:discord for API validation' });
+} else if (process.env.DISCORD_BOT_TOKEN) {
+  checks.push({ provider: 'discord', ok: true, detail: 'bot token present, channel ID missing; run npm run check:discord for API validation' });
 } else {
   checks.push({ provider: 'discord', ok: true, detail: 'credentials missing; adapter skipped' });
 }
 
 if (process.env.SLACK_BOT_TOKEN && process.env.SLACK_APP_TOKEN && process.env.SLACK_SIGNING_SECRET) {
-  checks.push({ provider: 'slack', ok: true, detail: 'credentials present; Socket Mode not live-tested in provider check' });
+  checks.push({ provider: 'slack', ok: true, detail: 'bot/app/signing credentials present; run npm run check:slack for API validation' });
+} else if (process.env.SLACK_APP_TOKEN) {
+  checks.push({ provider: 'slack', ok: true, detail: 'app token present, bot token missing; Socket Mode can open but bot cannot post yet' });
 } else {
   checks.push({ provider: 'slack', ok: true, detail: 'credentials missing; adapter skipped' });
 }

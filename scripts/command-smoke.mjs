@@ -38,7 +38,29 @@ assert(demo.includes('Route: booking'), 'demo booking should use booking route')
 const history = await handleCommand({ command: parseCommand('/history 2'), config, runtime, sourceMessage });
 assert(history.includes('Last 2 event'), 'history should show recent events');
 
-console.log('Command smoke passed: help, tools, route, demo, and history commands work.');
+const lead = await handleCommand({
+  command: parseCommand('/lead Boiler stopped and we have no hot water today'),
+  config,
+  runtime,
+  sourceMessage,
+});
+assert(lead.includes('Lead intake'), 'lead command should process lead intake');
+
+const book = await handleCommand({
+  command: parseCommand('/book tomorrow afternoon'),
+  config,
+  runtime,
+  sourceMessage,
+});
+assert(book.includes('Booking workflow'), 'book command should process booking workflow');
+
+const handoff = await handleCommand({ command: parseCommand('/handoff'), config, runtime, sourceMessage });
+assert(handoff.includes('Operator handoff'), 'handoff should summarize latest event');
+
+const approve = await handleCommand({ command: parseCommand('/approve_last'), config, runtime, sourceMessage });
+assert(approve.includes('Approved latest event'), 'approve_last should approve latest event');
+
+console.log('Command smoke passed: help, tools, route, demo, history, lead, book, handoff, and approval commands work.');
 
 function assert(condition, message) {
   if (!condition) throw new Error(message);

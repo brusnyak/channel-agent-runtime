@@ -28,6 +28,11 @@ export async function handleCommand({ command, config, runtime, sourceMessage })
       '/routes - configured routes',
       '/demo urgent|booking|general - run a built-in demo message',
       '/route <message> - classify and draft for custom text',
+      '/lead <message> - process a lead/customer message',
+      '/book <request> - process a booking request',
+      '/handoff - summarize the latest event for an operator',
+      '/approve_last - approve the latest queued event',
+      '/reject_last - reject the latest queued event',
       '/history [n] - show recent events',
       '',
       'Plain messages are processed through the same runtime and queued for approval.',
@@ -69,6 +74,60 @@ export async function handleCommand({ command, config, runtime, sourceMessage })
           `- ${event.channel} / ${event.route} / ${event.outbound_status}: ${truncate(event.input, 80)}`,
       ),
     ].join('\n');
+  }
+
+  if (command.name === 'lead') {
+    if (!command.rest) return 'Usage: /lead <customer message>';
+    const decision = await runtime.handleMessage({
+      ...sourceMessage,
+      text: command.rest,
+      raw: { command: command.name },
+    });
+    return formatDecision(decision, 'Lead intake');
+  }
+
+  if (command.name === 'book') {
+    if (!command.rest) return 'Usage: /book <booking request>';
+    const decision = await runtime.handleMessage({
+      ...sourceMessage,
+      text: `book appointment ${command.rest}`,
+      raw: { command: command.name },
+    });
+    return formatDecision(decision, 'Booking workflow');
+  }
+
+  if (command.name === 'handoff') {
+    const latest = latestDecision(previous);
+    if (!latest) return 'No event available for handoff.';
+    return [
+      'Operator handoff',
+      `Event: ${latest.id}`,
+      `Channel: ${latest.channel}`,
+      `Route: ${latest.route}`,
+      `Status: ${latest.outbound_status}`,
+      `From: ${latest.sender?.name ?? latest.sender?.handle ?? latest.sender?.id ?? 'unknown'}`,
+      '',
+      `Message: ${latest.input}`,
+      '',
+      `Draft: ${latest.reply ?? 'none'}`,
+    ].join('\n');
+  }
+
+  if (command.name === 'approve_last' || command.name === 'reject_last') {
+    const latest = latestDecision(previous);
+    if (!latest) return 'No event available to review.';
+    const status = command.name === 'approve_last' ? 'approved' : 'rejected';
+    await runtime.store.append({
+      id: `review_${Date.now()}_${Math.random().toString(16).slice(2)}`,
+      at: new Date().toISOString(),
+      type: 'operator_review',
+      status,
+      target_event_id: latest.id,
+      target_route: latest.route,
+      reviewer: sourceMessage.sender,
+      note: command.rest || null,
+    });
+    return `${status === 'approved' ? 'Approved' : 'Rejected'} latest event ${latest.id}.`;
   }
 
   if (command.name === 'demo') {
@@ -122,6 +181,10 @@ function demoText(kind) {
   if (kind === 'booking') return 'Can I book an appointment tomorrow afternoon?';
   if (kind === 'general') return 'Hi, can you tell me what services you offer?';
   return 'Boiler stopped and we have no hot water today. Can someone come out?';
+}
+
+function latestDecision(events) {
+  return [...events].reverse().find((event) => event.reply || event.outbound_status);
 }
 
 function clampNumber(value, min, max) {

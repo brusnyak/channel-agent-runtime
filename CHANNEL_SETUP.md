@@ -26,6 +26,10 @@ Commands:
 /demo urgent
 /demo booking
 /route Boiler stopped and we have no hot water today
+/lead Boiler stopped and we have no hot water today
+/book tomorrow afternoon
+/handoff
+/approve_last
 /history 5
 ```
 
@@ -43,6 +47,20 @@ TWILIO_WHATSAPP_FROM missing
 ```
 
 This means we can test Twilio/Hermes-style inbound payloads locally, but cannot honestly test real WhatsApp send/receive yet.
+
+Fast demo path with Hermes:
+
+```bash
+hermes gateway setup
+```
+
+Pick WhatsApp. Hermes uses a Baileys bridge for the quick path, so it pairs through WhatsApp Web by QR code. That is much simpler than Twilio/Meta setup and good enough for personal demo testing. It is not the clean production path because it is unofficial and tied to a WhatsApp Web session.
+
+Production path:
+
+- Hermes WhatsApp Business Cloud API
+- Twilio WhatsApp
+- direct Meta WhatsApp Cloud API
 
 Twilio requires either:
 
@@ -67,18 +85,18 @@ Real send:
 node scripts/whatsapp-check.mjs --to=whatsapp:+421949504848 --send
 ```
 
-Do not use unofficial WhatsApp Web automation for a professional demo.
+Use Hermes Baileys for fast private demo if needed. Use Cloud/Twilio/Meta for a professional client-facing proof.
 
 ## Discord
 
-Status: adapter implemented, credentials missing.
+Status: adapter implemented. Supplied token is rejected by Discord API with `401 Unauthorized`, and channel ID is missing.
 
 Setup:
 
 1. Open [Discord Developer Portal](https://discord.com/developers/applications).
 2. Create a new application.
 3. Go to **Bot**.
-4. Create/reset bot token.
+4. Create/reset bot token. The currently supplied token should be treated as invalid and compromised.
 5. Enable **Message Content Intent** under privileged gateway intents.
 6. OAuth2 -> URL Generator:
    - scopes: `bot`
@@ -101,9 +119,21 @@ npm run discord
 
 Commands can use `/help` or `!help`.
 
+Check token:
+
+```bash
+npm run check:discord
+```
+
+Expected result after a valid token:
+
+```text
+"ok": true
+```
+
 ## Slack
 
-Status: not implemented yet.
+Status: adapter implemented. App-level Socket Mode token works. Bot token is missing.
 
 Recommended setup: Bolt for JavaScript with Socket Mode. This avoids needing a public URL during local development.
 
@@ -129,4 +159,10 @@ SLACK_SIGNING_SECRET=...
 SLACK_CHANNEL_ID=...
 ```
 
-Then we can add `@slack/bolt` adapter matching the same command/runtime interface.
+The runtime already includes a Bolt Socket Mode adapter matching the same command/runtime interface.
+
+Check tokens:
+
+```bash
+npm run check:slack
+```
