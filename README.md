@@ -1,19 +1,19 @@
 # Channel Agent Runtime
 
-Config-driven messaging agent runtime for Telegram, Discord, and phone/WhatsApp-style gateways.
+LangGraph-backed messaging bot runtime for Telegram, Discord, Slack, and phone/WhatsApp-style gateways.
 
 This is the proper proof asset for bot/operator jobs. It is not a web UI. The interface is channels plus configuration.
 
 ## What It Proves
 
-- Agent behavior is defined by YAML config.
+- Agent behavior is defined by YAML config and executed through a LangGraph state graph.
 - Channels are adapters, not separate apps.
 - Bot commands are implemented, not just conversational text handling.
 - Telegram can run for real with `grammY`.
 - Discord can run for real with `discord.js`.
 - Slack can run for real with Bolt Socket Mode once credentials are present.
 - WhatsApp is represented as a phone/webhook gateway so it can bind later to Hermes Baileys, Hermes Cloud API, Twilio, or Meta WhatsApp Cloud API without rewriting the agent.
-- Tools are registered once and reused across channels.
+- Tools are registered once and reused across channel-specific workflows.
 - State is written to JSONL for audit/replay.
 - Outbound replies are approval-gated by default.
 
@@ -37,11 +37,11 @@ flowchart LR
   DC["Discord via discord.js"] --> N
   SL["Slack via Bolt Socket Mode"] --> N
   WA["WhatsApp/phone webhook"] --> N
-  N --> CFG["YAML agent config"]
-  CFG --> ROUTE["Route selector"]
-  ROUTE --> TOOLS["Tool registry"]
-  TOOLS --> MEM["JSONL memory/audit log"]
-  TOOLS --> OUT["Draft reply"]
+  N --> G["LangGraph runtime"]
+  G --> ROUTE["select_route node"]
+  ROUTE --> TOOLS["run_tools node"]
+  TOOLS --> OUT["build_decision node"]
+  OUT --> MEM["persist_event node"]
   OUT --> APPROVAL["Approval-first outbound policy"]
 ```
 
@@ -49,7 +49,7 @@ flowchart LR
 
 - `grammY` is a good Telegram default because it supports Node.js and both polling and webhooks.
 - `discord.js` is the standard Node.js Discord bot library.
-- `LangGraph` is worth using later for longer-lived, stateful, multi-step agent flows. This scaffold keeps the runtime small first.
+- `LangGraph` is used for the runtime graph: route selection, tool execution, decision building, and persistence.
 - Hermes is the easiest WhatsApp demo path because its Baileys bridge pairs through WhatsApp Web. For client-facing work, use Hermes Cloud API, Twilio WhatsApp, or direct Meta WhatsApp Cloud API.
 
 ## Run
@@ -65,18 +65,18 @@ Verified locally on 2026-07-18:
 
 ```text
 Smoke passed: config runtime, phone webhook normalization, Telegram/Slack normalization, routing, tools, and JSONL memory work.
-HTTP smoke passed: health, Hermes JSON webhook, Twilio form webhook, and events endpoint work.
+HTTP smoke passed: health, WhatsApp Cloud verify, Hermes JSON webhook, Twilio form webhook, and events endpoint work.
 OK telegram: bot @yjobiz_bot
 OK openrouter: 20 free model(s) visible
-OK discord: credentials missing; adapter skipped
-OK slack: credentials missing; adapter skipped
+OK discord: token and channel configured; run npm run check:discord for API validation
+OK slack: bot/app/signing credentials present; run npm run check:slack for API validation
 ```
 
 Latest live credential checks:
 
 ```text
 Discord: bot token validates and channel send proof passed.
-Slack: Socket Mode app token and bot token validate; channel send needs `chat:write`.
+Slack: Socket Mode app token and bot token validate; channel send returns `not_in_channel`, so invite the app/bot to the target channel.
 WhatsApp: Twilio credentials exist, but TWILIO_WHATSAPP_FROM is missing, so real WhatsApp send is not configured.
 ```
 
@@ -199,6 +199,10 @@ Slack uses Bolt Socket Mode, so no public webhook URL is required for local deve
 ## Channel Setup
 
 See [CHANNEL_SETUP.md](CHANNEL_SETUP.md) for Telegram, WhatsApp/Twilio, Discord, and Slack credential setup.
+
+## Demo Guide
+
+See [DEMO_GUIDE.md](DEMO_GUIDE.md) for the exact Telegram salon, Discord moderation, Slack workflow, and WhatsApp real-estate demo flows.
 
 ## Config
 

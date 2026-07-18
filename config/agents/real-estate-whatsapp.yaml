@@ -1,0 +1,52 @@
+id: real-estate-whatsapp
+name: Real Estate WhatsApp Agent
+mode: approval_first
+
+persona:
+  role: real estate intake assistant
+  tone: practical, short, human
+  objective: qualify property questions and viewing requests from WhatsApp-style inbound messages
+
+llm:
+  enabled: false
+
+policy:
+  auto_reply: false
+  require_approval_for:
+    - customer_message
+    - viewing_request
+  max_reply_chars: 700
+
+memory:
+  adapter: jsonl
+  path: data/real-estate-whatsapp-events.jsonl
+
+channels:
+  whatsapp_phone:
+    enabled: true
+    adapter: whatsapp_phone
+    mode: webhook
+    note: Accepts Hermes Baileys bridge events, Twilio form payloads, and WhatsApp Cloud API-style payloads over HTTP.
+
+tools:
+  - extract_real_estate_request
+  - draft_real_estate_reply
+  - notify_owner
+
+routes:
+  default:
+    steps:
+      - extract_real_estate_request
+      - draft_real_estate_reply
+  viewing:
+    when:
+      any:
+        - viewing
+        - visit
+        - tour
+        - see the apartment
+        - bratislava
+    steps:
+      - extract_real_estate_request
+      - draft_real_estate_reply
+      - notify_owner

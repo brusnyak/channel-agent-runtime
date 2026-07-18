@@ -1,0 +1,51 @@
+id: slack-workflow-triage
+name: Slack Workflow Triage Agent
+mode: approval_first
+
+persona:
+  role: internal operations bot
+  tone: concise, operational
+  objective: triage Slack requests, classify priority, and draft operator updates
+
+llm:
+  enabled: false
+
+policy:
+  auto_reply: false
+  require_approval_for:
+    - workflow_update
+  max_reply_chars: 600
+
+memory:
+  adapter: jsonl
+  path: data/slack-workflow-events.jsonl
+
+channels:
+  slack:
+    enabled: true
+    adapter: slack
+    bot_token_env: SLACK_BOT_TOKEN
+    app_token_env: SLACK_APP_TOKEN
+    signing_secret_env: SLACK_SIGNING_SECRET
+    channel_id_env: SLACK_CHANNEL_ID
+
+tools:
+  - triage_slack_request
+  - draft_slack_update
+
+routes:
+  default:
+    steps:
+      - triage_slack_request
+      - draft_slack_update
+  incident:
+    when:
+      any:
+        - urgent
+        - blocked
+        - broken
+        - down
+        - client waiting
+    steps:
+      - triage_slack_request
+      - draft_slack_update

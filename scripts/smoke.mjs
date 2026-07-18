@@ -43,6 +43,9 @@ const events = await runtime.store.readAll();
 assert(phoneDecision.route === 'urgent_service', 'phone decision should use urgent route');
 assert(telegramDecision.route === 'booking', 'telegram decision should use booking route');
 assert(slackDecision.route === 'booking', 'slack decision should use booking route');
+assert(phoneDecision.graph === 'langgraph', 'runtime should use LangGraph');
+assert(phoneDecision.graph_trace.includes('select_route'), 'graph trace should include route node');
+assert(phoneDecision.graph_trace.includes('run_tools'), 'graph trace should include tools node');
 assert(phoneDecision.tool_results.draft_reply.text, 'phone decision should draft reply');
 assert(events.length === 3, 'store should persist all decisions');
 

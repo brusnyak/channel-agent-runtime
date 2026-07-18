@@ -10,12 +10,18 @@ const child = spawn(process.execPath, ['src/cli.mjs', 'server', '--config', 'con
     ...process.env,
     RUNTIME_PORT: String(port),
     CHANNEL_AGENT_DATA_DIR: dataDir,
+    WHATSAPP_VERIFY_TOKEN: 'demo-verify-token',
   },
   stdio: ['ignore', 'pipe', 'pipe'],
 });
 
 try {
   await waitFor(`http://127.0.0.1:${port}/health`);
+
+  const verify = await fetch(
+    `http://127.0.0.1:${port}/webhooks/whatsapp-cloud?hub.mode=subscribe&hub.verify_token=demo-verify-token&hub.challenge=12345`,
+  );
+  assert(await verify.text() === '12345', 'WhatsApp Cloud webhook verification should echo challenge');
 
   const hermes = await postJson(`http://127.0.0.1:${port}/webhooks/hermes`, {
     channel: 'whatsapp_phone',
@@ -36,7 +42,7 @@ try {
   const events = await getJson(`http://127.0.0.1:${port}/events`);
   assert(events.events.length === 2, 'HTTP server should persist two events');
 
-  console.log('HTTP smoke passed: health, Hermes JSON webhook, Twilio form webhook, and events endpoint work.');
+  console.log('HTTP smoke passed: health, WhatsApp Cloud verify, Hermes JSON webhook, Twilio form webhook, and events endpoint work.');
 } finally {
   child.kill('SIGTERM');
 }

@@ -95,16 +95,36 @@ npm run test:http
 
 This proves the agent accepts Hermes-normalized and Twilio-style WhatsApp payloads. It does not prove real WhatsApp delivery.
 
+WhatsApp Cloud API webhook verification is implemented at:
+
+```text
+GET /webhooks/whatsapp-cloud
+```
+
+Set:
+
+```bash
+WHATSAPP_VERIFY_TOKEN=...
+WHATSAPP_CLOUD_TOKEN=...
+WHATSAPP_PHONE_NUMBER_ID=...
+```
+
+Dry-run a Cloud API send:
+
+```bash
+npm run check:whatsapp-cloud -- --to=421949504848
+```
+
 ## Discord
 
-Status: adapter implemented. Supplied token is rejected by Discord API with `401 Unauthorized`, and channel ID is missing.
+Status: adapter implemented. Token validates and channel send proof passed.
 
 Setup:
 
 1. Open [Discord Developer Portal](https://discord.com/developers/applications).
 2. Create a new application.
 3. Go to **Bot**.
-4. Create/reset bot token. The currently supplied token should be treated as invalid and compromised.
+4. Create/reset bot token.
 5. Enable **Message Content Intent** under privileged gateway intents.
 6. OAuth2 -> URL Generator:
    - scopes: `bot`
@@ -147,7 +167,7 @@ Expected result after a valid token:
 
 ## Slack
 
-Status: adapter implemented. App-level Socket Mode token works. Bot token is missing.
+Status: adapter implemented. App-level Socket Mode token and bot token validate. Bot must be invited to the target channel before posting.
 
 Recommended setup: Bolt for JavaScript with Socket Mode. This avoids needing a public URL during local development.
 
