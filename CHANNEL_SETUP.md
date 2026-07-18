@@ -87,6 +87,14 @@ node scripts/whatsapp-check.mjs --to=whatsapp:+421949504848 --send
 
 Use Hermes Baileys for fast private demo if needed. Use Cloud/Twilio/Meta for a professional client-facing proof.
 
+Local proof that WhatsApp/Hermes-style inbound handling works:
+
+```bash
+npm run test:http
+```
+
+This proves the agent accepts Hermes-normalized and Twilio-style WhatsApp payloads. It does not prove real WhatsApp delivery.
+
 ## Discord
 
 Status: adapter implemented. Supplied token is rejected by Discord API with `401 Unauthorized`, and channel ID is missing.
@@ -123,6 +131,12 @@ Check token:
 
 ```bash
 npm run check:discord
+```
+
+Send a channel proof message:
+
+```bash
+npm run send-test:discord
 ```
 
 Expected result after a valid token:
@@ -166,3 +180,11 @@ Check tokens:
 ```bash
 npm run check:slack
 ```
+
+Send a channel proof message:
+
+```bash
+npm run send-test:slack
+```
+
+If this returns `missing_scope`, add `chat:write` to Bot Token Scopes and reinstall the app to the workspace.

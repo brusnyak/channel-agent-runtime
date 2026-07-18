@@ -75,8 +75,8 @@ OK slack: credentials missing; adapter skipped
 Latest live credential checks:
 
 ```text
-Discord: token rejected by Discord API with 401 Unauthorized; channel ID is also missing.
-Slack: Socket Mode app token works; bot user token is missing.
+Discord: bot token validates and channel send proof passed.
+Slack: Socket Mode app token and bot token validate; channel send needs `chat:write`.
 WhatsApp: Twilio credentials exist, but TWILIO_WHATSAPP_FROM is missing, so real WhatsApp send is not configured.
 ```
 
