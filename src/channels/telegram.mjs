@@ -14,6 +14,15 @@ export async function startTelegram(config, runtime) {
 
   bot.on('message:text', async (ctx) => {
     const decision = await runtime.handleMessage(normalizeTelegram(ctx.update));
+    console.log(
+      JSON.stringify({
+        at: decision.at,
+        channel: decision.channel,
+        route: decision.route,
+        sender: decision.sender?.handle ?? decision.sender?.id,
+        outbound_status: decision.outbound_status,
+      }),
+    );
     if (decision.approval_required) {
       await ctx.reply(`Draft queued for approval:\n\n${decision.reply}`);
     } else {

@@ -2,7 +2,9 @@ import { appendFile, mkdir, readFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 
 export function createJsonlStore(path = 'data/events.jsonl') {
-  const filePath = resolve(path);
+  const filePath = process.env.CHANNEL_AGENT_DATA_DIR
+    ? resolve(process.env.CHANNEL_AGENT_DATA_DIR, path.split('/').pop() ?? 'events.jsonl')
+    : resolve(path);
   return {
     async append(event) {
       await mkdir(dirname(filePath), { recursive: true });

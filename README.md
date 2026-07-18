@@ -62,6 +62,10 @@ Verified locally on 2026-07-18:
 
 ```text
 Smoke passed: config runtime, phone webhook normalization, Telegram normalization, routing, tools, and JSONL memory work.
+HTTP smoke passed: health, Hermes JSON webhook, Twilio form webhook, and events endpoint work.
+OK telegram: bot @yjobiz_bot
+OK openrouter: 20 free model(s) visible
+OK discord: credentials missing; adapter skipped
 ```
 
 ## HTTP Gateway
@@ -122,6 +126,16 @@ npm run telegram
 ```
 
 This starts long polling. For Oracle deployment, a webhook mode can be added behind nginx/Caddy once the public URL is stable.
+
+Live test status:
+
+```text
+Telegram long polling tested successfully with @yjobiz_bot.
+Inbound Telegram message normalized into the shared runtime.
+Route selected: urgent_service.
+Outbound status: queued_for_approval.
+Bot replied with the approval-gated draft.
+```
 
 ## Discord
 
@@ -221,6 +235,28 @@ OpenRouter models endpoint: ok, free models available
 ```
 
 Discord was not tested because credentials are not present.
+
+## Test Suite
+
+```bash
+npm run test
+npm run test:llm
+```
+
+`npm run test` covers:
+
+- config/runtime smoke
+- Telegram payload normalization
+- phone/WhatsApp payload normalization
+- route selection
+- tool execution
+- JSONL memory
+- HTTP health endpoint
+- Hermes-style JSON webhook
+- Twilio-style form webhook
+- provider checks for Telegram and OpenRouter
+
+`npm run test:llm` performs a live OpenRouter call and verifies that the reply remains approval-gated.
 
 ## Application Proof Line
 

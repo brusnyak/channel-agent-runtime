@@ -17,15 +17,16 @@ Working:
 - Approval-first outbound policy.
 - Optional OpenRouter drafting hook, disabled by default in main config.
 - OpenRouter LLM simulation works with the current root `.env`.
+- Telegram long polling live test succeeded with `@yjobiz_bot`.
+- HTTP API smoke test covers health, Hermes JSON webhook, Twilio form webhook, and event persistence.
 - Smoke test covering runtime, routing, tools, Telegram normalization, phone/WhatsApp normalization, and persistence.
 
 Not working yet:
 
-- Real Telegram bot loop has not been live-tested in this run.
 - Discord cannot be tested because `DISCORD_BOT_TOKEN` and `DISCORD_CHANNEL_ID` are missing.
 - WhatsApp real sending is not connected; this intentionally stays as a provider-neutral phone/webhook adapter until Hermes/Twilio/Meta configuration is chosen.
 - No LangGraph implementation yet.
-- No GitHub repo or deployment yet.
+- Oracle/systemd deployment is not done yet.
 
 ## Credential State
 
@@ -140,7 +141,7 @@ Do not add it just to say we used LangGraph. For the current demo, a small runti
 Minimum believable public repo:
 
 1. Keep `channel-agent-runtime` as the main project.
-2. Add one real Telegram demo transcript or screenshot after live test.
+2. Add one real Telegram demo transcript or screenshot after live test. Done locally; README status updated.
 3. Add one OpenRouter-enabled run with redacted model output. Done locally; add to README before public push.
 4. Add one architecture diagram in README.
 5. Add a `.env.example` and no secrets.
