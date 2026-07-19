@@ -36,33 +36,33 @@ channel adapter -> normalized event -> LangGraph state graph -> tools -> decisio
 
 ```mermaid
 flowchart TB
-    Telegram[Telegram / grammY] --> Normalize[Message Normalization]
-    Discord[Discord / discord.js] --> Normalize
-    Slack[Slack / Bolt Socket Mode] --> Normalize
-    WhatsApp[WhatsApp / Phone Webhook] --> Normalize
+    Telegram["Telegram / grammY"] --> Normalize["Message Normalization"]
+    Discord["Discord / discord.js"] --> Normalize
+    Slack["Slack / Bolt Socket Mode"] --> Normalize
+    WhatsApp["WhatsApp / Phone Webhook"] --> Normalize
 
-    Normalize --> Graph[LangGraph Runtime]
-    Graph --> Route[select_route]
-    Route --> Tools[run_tools]
-    Tools --> Decision[build_decision]
-    Decision --> Memory[persist_event]
-    Decision --> Approval[Approval Queue]
+    Normalize --> Runtime["LangGraph Runtime"]
+    Runtime --> Route["select_route"]
+    Route --> Tools["run_tools"]
+    Tools --> Decision["build_decision"]
+    Decision --> Memory["persist_event"]
+    Decision --> Approval["Approval Queue"]
 
-    Tools --> ToolRegistry[Shared Tool Registry]
-    Memory --> JSONL[(JSONL Audit Log)]
-    Approval --> Outbound[Channel Reply Draft]
+    Tools --> ToolRegistry["Shared Tool Registry"]
+    Memory --> AuditLog[("JSONL Audit Log")]
+    Approval --> Outbound["Channel Reply Draft"]
 
     classDef channel fill:#DBEAFE,stroke:#2563EB,color:#0F172A,stroke-width:1px
     classDef runtime fill:#EDE9FE,stroke:#7C3AED,color:#0F172A,stroke-width:1px
-    classDef graph fill:#DCFCE7,stroke:#16A34A,color:#0F172A,stroke-width:1px
+    classDef workflow fill:#DCFCE7,stroke:#16A34A,color:#0F172A,stroke-width:1px
     classDef policy fill:#FEF3C7,stroke:#D97706,color:#0F172A,stroke-width:1px
     classDef data fill:#FCE7F3,stroke:#DB2777,color:#0F172A,stroke-width:1px
 
     class Telegram,Discord,Slack,WhatsApp channel
-    class Normalize,Graph runtime
-    class Route,Tools,Decision,Memory,ToolRegistry graph
+    class Normalize,Runtime runtime
+    class Route,Tools,Decision,Memory,ToolRegistry workflow
     class Approval,Outbound policy
-    class JSONL data
+    class AuditLog data
 ```
 
 ### Runtime flow
