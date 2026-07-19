@@ -1,0 +1,52 @@
+id: discord-moderation-llm
+name: Discord Moderation Agent (OpenRouter Drafting)
+mode: approval_first
+
+persona:
+  role: community moderation assistant
+  tone: firm, short, policy-based
+  objective: classify risky messages, draft moderation actions, and queue human review for non-trivial cases
+
+llm:
+  enabled: true
+  provider: openrouter
+  model: google/gemma-4-26b-a4b-it:free
+
+policy:
+  auto_reply: false
+  require_approval_for:
+    - moderation_action
+  max_reply_chars: 500
+
+memory:
+  adapter: jsonl
+  path: data/discord-moderation-llm-events.jsonl
+
+channels:
+  discord:
+    enabled: true
+    adapter: discord
+    token_env: DISCORD_BOT_TOKEN
+    channel_id_env: DISCORD_CHANNEL_ID
+
+tools:
+  - classify_discord_message
+  - draft_moderation_action
+
+routes:
+  default:
+    steps:
+      - classify_discord_message
+      - draft_moderation_action
+  moderation:
+    when:
+      any:
+        - spam
+        - scam
+        - idiot
+        - stupid
+        - hate
+        - discord.gg
+    steps:
+      - classify_discord_message
+      - draft_moderation_action

@@ -7,17 +7,9 @@
 [![Slack](https://img.shields.io/badge/Slack-Bolt_Socket_Mode-4A154B?logo=slack&logoColor=white)](https://slack.dev/bolt-js/)
 [![WhatsApp](https://img.shields.io/badge/WhatsApp-webhook_ready-25D366?logo=whatsapp&logoColor=white)](https://developers.facebook.com/docs/whatsapp/)
 
-Channel Agent Runtime is a LangGraph-backed messaging bot runtime for Telegram, Discord, Slack, and WhatsApp/phone-style gateways. It normalizes messages from different platforms into one configurable agent workflow with tool execution, audit logging, and approval-gated outbound replies.
+A config-driven multi-channel agent runtime. Telegram, Discord, Slack, and WhatsApp/phone events normalize into one LangGraph state graph with tools, memory, and approval-first outbound replies.
 
-## Overview
-
-This repository is a proof asset for bot, automation, and operator-workflow roles. It is not a web dashboard; the product surface is the channel layer plus YAML-driven agent configuration.
-
-The core runtime proves that channel adapters can share one agent graph:
-
-```text
-channel adapter -> normalized event -> LangGraph state graph -> tools -> decision -> JSONL audit log -> approval-first reply
-```
+Built as portfolio proof for bot, operator, and agent-platform roles. Not a web UI — channels are the interface.
 
 ## What it proves
 
@@ -26,11 +18,11 @@ channel adapter -> normalized event -> LangGraph state graph -> tools -> decisio
 | Config-driven behavior | Agent routes, tools, channels, and outbound policy are defined in YAML. |
 | Shared runtime | Telegram, Discord, Slack, and WhatsApp-style inputs flow into the same graph. |
 | Real channel adapters | Telegram runs through `grammY`; Discord runs through `discord.js`; Slack uses Bolt Socket Mode. |
-| WhatsApp-ready gateway | WhatsApp is represented through HTTP webhook normalization for Hermes, Twilio, or Meta Cloud API paths. |
+| WhatsApp-ready gateway | WhatsApp is represented as HTTP webhook normalization for Hermes, Twilio, or Meta Cloud API. |
 | Tool reuse | Tools are registered once and reused across channel-specific workflows. |
-| Auditability | Events are persisted to JSONL for replay, debugging, and proof. |
-| Approval-first outbound | Drafted replies are queued for approval by default instead of auto-sending. |
-| Testable demos | Salon booking, Discord moderation, Slack workflow triage, and real-estate WhatsApp intake are covered by smoke tests. |
+| Auditability | Events persisted to JSONL for replay and debugging. |
+| Approval-first outbound | Drafted replies are queued for approval instead of auto-sending. |
+| Testable demos | Salon booking, Discord moderation, Slack triage, and WhatsApp real-estate intake covered by smoke tests. |
 
 ## System design
 
@@ -65,211 +57,91 @@ flowchart TB
     class AuditLog data
 ```
 
-### Runtime flow
+## Channel Status
 
-| Step | Component | Responsibility |
-| --- | --- | --- |
-| 1 | Channel adapter | Receives platform-specific events from Telegram, Discord, Slack, or webhook payloads. |
-| 2 | Normalizer | Converts each platform event into a shared message format. |
-| 3 | LangGraph runtime | Runs the configured state graph for route selection, tool execution, and decision building. |
-| 4 | Tool registry | Provides reusable workflow tools across channel-specific agents. |
-| 5 | Persistence node | Writes memory and audit events to JSONL. |
-| 6 | Approval policy | Queues outbound replies for approval unless policy allows automatic sending. |
+| Channel | Status | Demo |
+|---------|--------|------|
+| Telegram | ✅ Live — `@chant_my_bot` polling | `npm run telegram:salon` then message the bot |
+| Discord | ✅ Live — bot "Piligrim" | `npm run discord:moderation` |
+| Slack | ✅ Live — tokens + channel send work | `npm run slack:workflow` |
+| WhatsApp | ⚠️ Webhook handling works, no sender | `npm run simulate:whatsapp` or `npm run server:whatsapp` + curl |
+| LLM | ✅ OpenRouter drafting (14 free models) | `npm run simulate:salon-llm` |
 
 ## Demo scenarios
 
 | Scenario | Command | Purpose |
 | --- | --- | --- |
-| Missed-call recovery | `npm run simulate` | Default phone/webhook workflow for urgent service intake. |
-| Salon Telegram bot | `npm run simulate:salon` / `npm run telegram:salon` | Appointment booking workflow. |
-| Discord moderation | `npm run simulate:discord` / `npm run discord:moderation` | Moderation classification and approval-gated actions. |
-| Slack workflow triage | `npm run simulate:slack` / `npm run slack:workflow` | Internal workflow priority classification. |
-| Real-estate WhatsApp intake | `npm run simulate:whatsapp` / `npm run server:whatsapp` | Viewing request intake through WhatsApp-style webhook payloads. |
-
-## Tech stack
-
-| Layer | Choice | Notes |
-| --- | --- | --- |
-| Runtime | Node.js ES modules | CLI, server, and channel process runner. |
-| Agent graph | LangGraph | Route selection, tools, decision building, and persistence nodes. |
-| Config | YAML | Agent behavior, routes, tools, channels, and policies. |
-| Telegram | `grammY` | Long polling and bot command adapter. |
-| Discord | `discord.js` | Channel-scoped Discord bot adapter. |
-| Slack | `@slack/bolt` | Socket Mode adapter for local development without public webhooks. |
-| WhatsApp / phone | HTTP gateway | Hermes-style, Twilio-style, and WhatsApp Cloud webhook normalization. |
-| Memory | JSONL | Lightweight audit/replay log. |
-| LLM drafting | OpenRouter optional | Disabled by default for deterministic tests. |
+| Salon Telegram bot | `npm run simulate:salon` / `npm run telegram:salon` | Appointment booking with availability check |
+| Discord moderation | `npm run simulate:discord` / `npm run discord:moderation` | Moderation classification + approval-gated actions |
+| Slack workflow triage | `npm run simulate:slack` / `npm run slack:workflow` | Priority classification + operator routing |
+| Real-estate WhatsApp | `npm run simulate:whatsapp` / `npm run server:whatsapp` | Listing matching + multi-language reply (SK/DE/EN) |
+| LLM drafting | `npm run simulate:salon-llm` | Same demos with OpenRouter drafting + fallback |
 
 ## Quick start
 
-Install dependencies:
-
 ```bash
 npm install
+npm run test                   # runs all 5 test suites
+npm run simulate               # default missed-call-recovery agent
+npm run simulate:salon         # Telegram salon booking demo
+npm run simulate:discord       # Discord moderation demo
+npm run simulate:whatsapp      # WhatsApp real-estate intake
+npm run simulate:slack         # Slack workflow triage
 ```
 
-Run the full smoke suite:
+## Test output
 
-```bash
-npm run test
+```
+Smoke passed: config runtime, phone webhook normalization, Telegram/Slack normalization,
+              routing, tools, and JSONL memory work.
+Demo smoke passed: salon Telegram, Discord moderation, Slack workflow, and real-estate
+                   WhatsApp scenarios run through LangGraph.
+Command smoke passed: help, tools, route, demo, history, lead, book, handoff, and
+                      approval commands work.
+HTTP smoke passed: health, WhatsApp Cloud verify, Hermes JSON webhook, Twilio form
+                   webhook, and events endpoint work.
+OK telegram: bot @chant_my_bot
+OK openrouter: 14 free model(s) visible
+OK discord: bot token validates and channel send proof passed.
+OK slack: bot/app/signing credentials present
 ```
 
-Run the default simulation:
+## Application proof line
 
-```bash
-npm run simulate
 ```
-
-Start the HTTP gateway:
-
-```bash
-npm run server
+I built a config-driven multi-channel agent runtime in Node.js using LangGraph.
+Telegram, Discord, Slack, and WhatsApp-style webhooks all normalize into the same
+state graph for route selection, tool execution, decision building, JSONL audit,
+and approval-first outbound replies. OpenRouter drafting is optional — LLM failure
+falls back to template, not silence.
 ```
-
-Check health:
-
-```bash
-curl http://127.0.0.1:4337/health
-```
-
-## HTTP gateway examples
-
-### Hermes-style normalized payload
-
-```bash
-curl -s -X POST http://127.0.0.1:4337/webhooks/hermes \
-  -H 'content-type: application/json' \
-  -d '{
-    "channel": "whatsapp_phone",
-    "from": "+447700900123",
-    "name": "Demo Customer",
-    "text": "Boiler stopped and we have no hot water today. Can someone come out?"
-  }'
-```
-
-### Twilio-style payload
-
-```bash
-curl -s -X POST http://127.0.0.1:4337/webhooks/whatsapp-phone \
-  -H 'content-type: application/x-www-form-urlencoded' \
-  --data-urlencode 'From=whatsapp:+447700900123' \
-  --data-urlencode 'Body=Can I book an appointment tomorrow?' \
-  --data-urlencode 'ProfileName=Demo Customer'
-```
-
-Inspect events:
-
-```bash
-curl http://127.0.0.1:4337/events
-```
-
-## Channel setup
-
-| Channel | Run command | Notes |
-| --- | --- | --- |
-| Telegram | `npm run telegram` or `npm run telegram:salon` | Requires `TELEGRAM_BOT_TOKEN`. |
-| Discord | `npm run discord` or `npm run discord:moderation` | Requires `DISCORD_BOT_TOKEN`; optional `DISCORD_CHANNEL_ID` allow-listing. |
-| Slack | `npm run slack` or `npm run slack:workflow` | Uses Bolt Socket Mode with `SLACK_BOT_TOKEN`, `SLACK_APP_TOKEN`, and signing secret. |
-| WhatsApp Cloud | `npm run server:whatsapp` | Supports webhook verification and Cloud API-style inbound payloads. |
-| Twilio WhatsApp | HTTP gateway | Supports form-encoded inbound payload normalization. |
-| Hermes / Baileys | HTTP gateway | Good for fast personal WhatsApp demo via QR pairing. |
-
-See [CHANNEL_SETUP.md](CHANNEL_SETUP.md) for credential setup and provider checks.
-
-## Commands
-
-Telegram runtime commands include:
-
-```text
-/help
-/status
-/tools
-/routes
-/demo urgent
-/demo booking
-/route <message>
-/lead <customer message>
-/book <request>
-/handoff
-/approve_last
-/reject_last
-/history 5
-```
-
-Discord commands can use `/help` or `!help`.
 
 ## Configuration
 
-Main default config:
+Agent configs in `config/agents/`. Each YAML file defines routes, tools, channels, policy, and optional LLM settings:
 
-```text
-config/agents/missed-call-recovery.yaml
+```yaml
+id: salon-appointment-telegram
+mode: approval_first
+routes:
+  appointment:
+    when:
+      any: [book, appointment, nails, lashes]
+    steps: [extract_appointment_request, check_salon_availability, create_salon_booking, draft_salon_reply]
+policy:
+  auto_reply: false
+llm:
+  enabled: false
 ```
 
-Important config concepts:
+Channel setup instructions in [CHANNEL_SETUP.md](./CHANNEL_SETUP.md). Full demo flows in [DEMO_GUIDE.md](./DEMO_GUIDE.md).
 
-| Field | Meaning |
-| --- | --- |
-| `policy.auto_reply` | When `false`, replies are drafted and queued instead of auto-sent. |
-| `routes` | Maps message patterns or keywords to workflow routes. |
-| `tools` | Controls available tool calls. |
-| `channels` | Configures active adapters and required environment variables. |
+## Honest boundaries
 
-## Verification
-
-| Command | Purpose |
-| --- | --- |
-| `npm run test` | Full smoke suite across runtime, demos, commands, HTTP, and providers. |
-| `npm run test:smoke` | Core config/runtime smoke test. |
-| `npm run test:demos` | Demo scenario smoke tests. |
-| `npm run test:commands` | Channel command smoke tests. |
-| `npm run test:http` | HTTP webhook and gateway smoke tests. |
-| `npm run test:providers` | Provider credential visibility checks. |
-| `npm run check:discord` | Validate Discord token/channel configuration. |
-| `npm run check:slack` | Validate Slack credentials. |
-| `npm run check:whatsapp-cloud` | Validate WhatsApp Cloud API dry-run path. |
-
-## Honest boundary
-
-What works now:
-
-- Config loading.
-- LangGraph runtime.
-- Route selection.
-- Tool calls.
-- JSONL memory.
-- Telegram adapter.
-- Discord adapter.
-- Slack adapter.
-- HTTP phone/WhatsApp gateway.
-- Simulation and smoke tests.
-
-What still needs production work:
-
-- Durable approval queue beyond JSONL.
-- Provider-specific send workers.
-- Authentication on HTTP endpoints.
-- Deployment service file.
-- Database-backed memory.
-- Broader LLM provider integration for non-template replies.
-
-## Supporting docs
-
-| Document | Purpose |
-| --- | --- |
-| [CHANNEL_SETUP.md](CHANNEL_SETUP.md) | Telegram, WhatsApp/Twilio, Discord, and Slack credential setup. |
-| [DEMO_GUIDE.md](DEMO_GUIDE.md) | Exact demo flows for salon, Discord, Slack, and WhatsApp real-estate scenarios. |
-
-## README style direction
-
-This repository follows the shared portfolio README structure:
-
-- Short product description at the top.
-- Technology labels for fast scanning.
-- Feature, scenario, channel, command, and verification tables.
-- Coloured system design diagram when architecture is useful.
-- Practical setup, config, boundary, and supporting-docs sections.
-
-## License
-
-No license file is currently included in this repository.
+- **Telegram + Discord**: live and testable now
+- **Slack**: auth and channel send verified
+- **WhatsApp**: inbound webhook handling tested locally. Real sending needs Meta Cloud API, Twilio approved sender, or Hermes gateway
+- **LLM drafting**: runs on OpenRouter free-tier — latency and occasional empty completions expected; fallback path makes it acceptable for a demo
+- **Memory**: JSONL only (SQLite for real-estate listing data)
+- **HTTP endpoints**: no auth — local dev only
+- **No deployment service file**: manual start

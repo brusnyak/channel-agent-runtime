@@ -38,5 +38,12 @@ export async function startTelegram(config, runtime) {
   process.once('SIGINT', () => bot.stop());
   process.once('SIGTERM', () => bot.stop());
 
+  bot.catch((err) => {
+    console.error('Telegram handler error:', err);
+  });
+
+  const me = await bot.api.getMe();
+  console.log(`Telegram adapter connected as @${me.username} (long polling)`);
+
   await bot.start();
 }

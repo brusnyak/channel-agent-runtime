@@ -22,7 +22,7 @@ const help = await handleCommand({ command: parseCommand('/help'), config, runti
 assert(help.includes('/status'), 'help should list status command');
 
 const tools = await handleCommand({ command: parseCommand('/tools'), config, runtime, sourceMessage });
-assert(tools.includes('qualify_lead'), 'tools should list qualify_lead');
+assert(tools.includes('Internal workflow tools'), 'tools command should not expose raw tool names');
 
 const route = await handleCommand({
   command: parseCommand('/route Boiler stopped and we have no hot water today'),
@@ -30,10 +30,12 @@ const route = await handleCommand({
   runtime,
   sourceMessage,
 });
-assert(route.includes('Route: urgent_service'), 'route command should classify urgent service');
+assert(route.includes('Prepared reply:'), 'route command should return a prepared reply');
+assert(!route.includes('tool_results'), 'route command should hide raw tool output');
 
 const demo = await handleCommand({ command: parseCommand('/demo booking'), config, runtime, sourceMessage });
-assert(demo.includes('Route: booking'), 'demo booking should use booking route');
+assert(demo.includes('Prepared reply:'), 'demo booking should return a prepared reply');
+assert(!demo.includes('tool_results'), 'demo command should hide raw tool output');
 
 const history = await handleCommand({ command: parseCommand('/history 2'), config, runtime, sourceMessage });
 assert(history.includes('Last 2 event'), 'history should show recent events');

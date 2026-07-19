@@ -31,7 +31,7 @@ const scenarios = [
     channel: 'whatsapp_phone',
     text: 'Can I arrange a viewing for a 2 bedroom apartment in Bratislava tomorrow?',
     expectTool: 'extract_real_estate_request',
-    expectReply: 'viewing_request',
+    expectReply: 'https://www.nehnutelnosti.sk/',
   },
 ];
 
@@ -39,6 +39,7 @@ for (const scenario of scenarios) {
   const config = await loadConfig(scenario.config);
   const dataDir = await mkdtemp(join(tmpdir(), 'channel-runtime-demo-'));
   config.memory.path = join(dataDir, 'events.jsonl');
+  if (config.real_estate?.db_path) config.real_estate.db_path = join(dataDir, 'real-estate.sqlite');
   const runtime = createRuntime(config);
   const decision = await runtime.handleMessage({
     channel: scenario.channel,

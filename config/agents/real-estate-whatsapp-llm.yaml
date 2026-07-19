@@ -1,5 +1,5 @@
-id: real-estate-whatsapp
-name: Real Estate WhatsApp Agent
+id: real-estate-whatsapp-llm
+name: Real Estate WhatsApp Agent (OpenRouter Drafting)
 mode: approval_first
 
 persona:
@@ -8,7 +8,9 @@ persona:
   objective: qualify property questions and viewing requests from WhatsApp-style inbound messages
 
 llm:
-  enabled: false
+  enabled: true
+  provider: openrouter
+  model: google/gemma-4-26b-a4b-it:free
 
 policy:
   auto_reply: false
@@ -19,7 +21,7 @@ policy:
 
 memory:
   adapter: jsonl
-  path: data/real-estate-whatsapp-events.jsonl
+  path: data/real-estate-whatsapp-llm-events.jsonl
 
 real_estate:
   db_path: data/real-estate.sqlite

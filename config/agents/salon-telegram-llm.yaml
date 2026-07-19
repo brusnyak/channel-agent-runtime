@@ -1,0 +1,59 @@
+id: salon-appointment-telegram-llm
+name: Salon Appointment Agent (OpenRouter Drafting)
+mode: approval_first
+
+persona:
+  role: beauty salon booking assistant
+  tone: warm, concise, specific
+  objective: collect service, preferred time, and contact details; draft appointment confirmations for approval
+
+llm:
+  enabled: true
+  provider: openrouter
+  model: google/gemma-4-26b-a4b-it:free
+
+policy:
+  auto_reply: false
+  require_approval_for:
+    - booking_confirmation
+    - customer_message
+  max_reply_chars: 700
+
+memory:
+  adapter: jsonl
+  path: data/salon-telegram-llm-events.jsonl
+
+channels:
+  telegram:
+    enabled: true
+    adapter: telegram
+    token_env: TELEGRAM_BOT_TOKEN
+    mode: polling
+
+tools:
+  - extract_appointment_request
+  - check_salon_availability
+  - create_salon_booking
+  - draft_salon_reply
+
+routes:
+  default:
+    steps:
+      - extract_appointment_request
+      - check_salon_availability
+      - create_salon_booking
+      - draft_salon_reply
+  appointment:
+    when:
+      any:
+        - book
+        - appointment
+        - nails
+        - lashes
+        - hair
+        - tomorrow
+    steps:
+      - extract_appointment_request
+      - check_salon_availability
+      - create_salon_booking
+      - draft_salon_reply

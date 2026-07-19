@@ -1,3 +1,5 @@
+import { getRealEstateDigest, searchListings } from '../store/realEstateDb.mjs';
+
 export function parseCommand(text) {
   const trimmed = String(text ?? '').trim();
   if (!trimmed.startsWith('/')) return null;
@@ -23,19 +25,19 @@ export async function handleCommand({ command, config, runtime, sourceMessage })
   if (command.name === 'help') {
     return [
       'Commands:',
-      '/status - runtime and memory status',
-      '/tools - configured tools',
-      '/routes - configured routes',
+      '/status - short operating status',
+      '/digest - listings, conversations, and pending viewings',
+      '/listings - current available demo listings',
       '/demo urgent|booking|general - run a built-in demo message',
-      '/route <message> - classify and draft for custom text',
+      '/route <message> - test a custom customer message',
       '/lead <message> - process a lead/customer message',
       '/book <request> - process a booking request',
-      '/handoff - summarize the latest event for an operator',
+      '/handoff - summarize the latest event',
       '/approve_last - approve the latest queued event',
       '/reject_last - reject the latest queued event',
       '/history [n] - show recent events',
       '',
-      'Plain messages are processed through the same runtime and queued for approval.',
+      'Plain messages are handled through the same workflow and stored for review.',
     ].join('\n');
   }
 
@@ -50,17 +52,27 @@ export async function handleCommand({ command, config, runtime, sourceMessage })
   }
 
   if (command.name === 'tools') {
-    return ['Configured tools:', ...config.tools.map((tool) => `- ${tool}`)].join('\n');
+    return 'Internal workflow tools are configured. Use /status, /digest, /listings, or /history for operator-facing state.';
   }
 
   if (command.name === 'routes') {
-    return [
-      'Configured routes:',
-      ...Object.entries(config.routes).map(([name, route]) => {
-        const triggers = route.when?.any?.length ? ` triggers: ${route.when.any.join(', ')}` : '';
-        return `- ${name}: ${route.steps.join(' -> ')}${triggers}`;
-      }),
-    ].join('\n');
+    return 'Routing is internal. Send a customer-style message or use /route <message> to test behavior.';
+  }
+
+  if (command.name === 'digest') {
+    if (!config.tools.includes('real_estate_digest')) return 'Digest is not configured for this agent.';
+    const digest = getRealEstateDigest(config);
+    return formatRealEstateDigest(digest);
+  }
+
+  if (command.name === 'listings') {
+    if (!config.tools.includes('match_real_estate_listings')) return 'Listings are not configured for this agent.';
+    const listings = searchListings({
+      config,
+      request: { city: 'Bratislava', district: 'unknown', bedrooms: 'unknown', max_budget_eur: 'unknown' },
+      limit: 10,
+    });
+    return formatListings(listings);
   }
 
   if (command.name === 'history') {
@@ -157,9 +169,7 @@ export async function handleCommand({ command, config, runtime, sourceMessage })
 export function formatDecision(decision, title = 'Decision') {
   const lines = [
     title,
-    `Route: ${decision.route}`,
-    `Status: ${decision.outbound_status}`,
-    `Approval required: ${String(decision.approval_required)}`,
+    `Status: ${decision.approval_required ? 'waiting for approval' : 'ready'}`,
   ];
 
   const qualification = decision.tool_results?.qualify_lead;
@@ -170,11 +180,48 @@ export function formatDecision(decision, title = 'Decision') {
 
   if (decision.reply) {
     lines.push('');
-    lines.push('Draft:');
+    lines.push('Prepared reply:');
     lines.push(decision.reply);
   }
 
   return lines.join('\n');
+}
+
+function formatRealEstateDigest(digest) {
+  const lines = [
+    'Real estate digest',
+    `Available listings: ${digest.available_listings}`,
+    `Conversations stored: ${digest.conversations}`,
+    `Pending viewings: ${digest.pending_viewings}`,
+  ];
+
+  if (digest.upcoming.length) {
+    lines.push('', 'Pending viewing requests:');
+    for (const viewing of digest.upcoming) {
+      lines.push(`- #${viewing.id}: ${viewing.title} (${viewing.requested_time})`);
+      lines.push(`  ${viewing.url}`);
+    }
+  }
+
+  if (digest.recent.length) {
+    lines.push('', 'Recent conversations:');
+    for (const event of digest.recent) {
+      lines.push(`- ${event.sender_name}: ${truncate(event.raw_message, 90)}`);
+    }
+  }
+
+  return lines.join('\n');
+}
+
+function formatListings(listings) {
+  if (!listings.length) return 'No available listings match the current filter.';
+  return [
+    'Available demo listings:',
+    ...listings.map(
+      (listing, index) =>
+        `${index + 1}. ${listing.title} - EUR ${listing.price_eur}/mo, ${listing.district}, ${listing.size_sqm} sqm\n${listing.url}`,
+    ),
+  ].join('\n');
 }
 
 function demoText(kind) {
